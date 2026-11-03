@@ -1,29 +1,36 @@
 {% set name = "multi_key_dict" %}
-{% set version = "2.0.3" %}
+{% set version = "2.0.4" %}
 
 package:
-  name: "{{ name|lower }}"
-  version: "{{ version }}"
+  name: {{ name }}
+  version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: deebdec17aa30a1c432cb3f437e81f8621e1c0542a0c0617a74f71e232e9939e
+  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  sha256: 34b0fece445cae0147f0dcd542290ec8cab83a800535890a6b7c615c0c779d08
 
 build:
-  noarch: python
   number: 0
-  script: "{{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv "
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  skip: true  # [py<36]
 
 requirements:
   host:
     - pip
     - python
+    - setuptools >=77
   run:
     - python
 
 test:
   imports:
     - multi_key_dict
+  requires:
+    - pip
+  commands:
+    # Upstream ships no pytest suite; this is the self-test function upstream CI runs.
+    - python -c "from multi_key_dict import test_multi_key_dict; test_multi_key_dict()"
+    - pip check
 
 about:
   home: https://github.com/formiaczek/multi_key_dict
@@ -31,6 +38,15 @@ about:
   license_family: MIT
   license_file: '{{ environ["RECIPE_DIR"] }}/LICENSE'
   summary: Multi key dictionary implementation
+  description: |
+    Implementation of a multi-key dictionary: (key1[, key2, ...]) => value.
+    The dictionary has an interface similar to the standard dict but is
+    extended to support several keys referring to the same element, so the
+    value can be read, updated or deleted through any of its keys. It also
+    provides helpers for iterating over items and keys by key type, e.g. for
+    dictionaries using index-name key pairs.
+  doc_url: https://github.com/formiaczek/multi_key_dict/blob/v{{ version }}/README.txt
+  dev_url: https://github.com/formiaczek/multi_key_dict
 
 extra:
   recipe-maintainers:
